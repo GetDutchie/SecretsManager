@@ -43,7 +43,7 @@ module SecretsManager
     end
 
     def secret_env
-      ENV['AWS_SECRETS_ENV'] || ENV['RACK_ENV'] || dev
+      ENV['AWS_SECRETS_ENV'] || ENV['RACK_ENV'] || 'development'
     end
 
     def client

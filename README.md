@@ -34,6 +34,15 @@ This gem expects your secret value to be a JSON object. The only required key is
 * `ttl` - Time to live in seconds. Describes how long the secret should live in in-memory cache.
 * `encoding` - Currently, only `base64` is supported as a value. If your `value` is base64 encoded, this will result in a returned secret that is base64 decoded.
 
+Example:
+```
+{"value": "secretvalue", "ttl": 60} // Will live in cache for 60 seconds.
+```
+
+```
+{"value": "c2VjcmV0dmFsdWU=", "ttl": 60, "encoding": "base64"} // Will live in cache for 60 seconds and is base64 encoded. Result will be "secretvalue"
+```
+
 ### Configuration
 The follow ENV vars are expected:
 * `AWS_SECRETS_ENV` - preceeds all path lookups, ex: `dev`, `staging`, `qa`, `production`

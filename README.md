@@ -36,9 +36,9 @@ This gem expects your secret value to be a JSON object. The only required key is
 
 ### Configuration
 The follow ENV vars are expected:
-`AWS_SECRETS_ENV` - preceeds all path lookups, ex: `dev`, `staging`, `qa`, `production`
-`AWS_SECRETS_KEY` - AWS IAM access key
-`AWS_SECRETS_SECRET` - AWS IAM access secret
+* `AWS_SECRETS_ENV` - preceeds all path lookups, ex: `dev`, `staging`, `qa`, `production`
+* `AWS_SECRETS_KEY` - AWS IAM access key
+* `AWS_SECRETS_SECRET` - AWS IAM access secret
 
 The manager should be created at boot time, in an initializer for example, and stored as a constant or global.
 ```

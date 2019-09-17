@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 require "version"
+require "aws-sdk-secretsmanager"
 require "concurrent-ruby"
 require "json"
 
@@ -40,6 +43,8 @@ module SecretsManager
     end
 
     def client
+      return @aws_client if @aws_client
+
       @_client ||= Aws::SecretsManager::Client.new({
         region: ENV.fetch('AWS_SECRETS_REGION', 'us-east-1'),
         credentials: Aws::Credentials.new(ENV['AWS_SECRETS_KEY'], ENV['AWS_SECRETS_SECRET'])

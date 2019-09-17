@@ -89,13 +89,6 @@ module SecretsManager
         end
       end
 
-      if data[:type].present?
-        case data[:type]
-        when "file"
-          value = StringIO.new(Base64.strict_decode64(data[:value]))
-        end
-      end
-
       return value
     end
   end

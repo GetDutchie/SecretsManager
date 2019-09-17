@@ -1,8 +1,4 @@
-# Secrets::Manager
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/secrets/manager`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+# SecretsManager.rb
 
 ## Installation
 
@@ -22,7 +18,21 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+To use this gem, you must have an AWS account and permissions to setup secret values using [Secrets Manager](https://aws.amazon.com/secrets-manager/)
+
+This gem makes assumptions and has requirements about how you should be storing your secrets.
+
+### Path Name
+This gem uses the concept of env specific secrets within the same account. While separate AWS accounts can be used to maintain separation, it can be desirable to use a single account.
+
+The path format is as follows: `{{secret_env}}/{{secret_path}}`. When using this gem you would leave the `secret_env` out of your request.
+
+For example, to access the secret `twlio-key`, `$secrets.fetch('twilio-key')`. This would be stored in AWS SM as `dev/twilio-key`.
+
+### Payload
+This gem expects your secret value to be a JSON object. The only required key is `value`. The following keys are optional:
+* `ttl` - Time to live in seconds. Describes how long the secret should live in in-memory cache.
+* `encoding` - Currently, only `base64` is supported as a value. If your `value` is base64 encoded, this will result in a returned secret that is base64 decoded.
 
 ## Development
 

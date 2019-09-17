@@ -8,6 +8,10 @@ require "json"
 module SecretsManager
   class SecretNotFound < StandardError; end;
 
+  def self.new
+    Manager.new
+  end
+
   class Cache
     def initialize
       @_cache = Concurrent::Map.new
@@ -36,9 +40,10 @@ module SecretsManager
     def initialize(client: nil)
       @cache = Cache.new
       @aws_client = client
+    end
 
     def secret_env
-      ENV.fetch('AWS_SECRETS_ENV', 'dev'),
+      ENV.fetch('AWS_SECRETS_ENV', 'dev')
     end
 
     def client
@@ -90,5 +95,6 @@ module SecretsManager
 
       return value
     end
+
   end
 end

@@ -66,7 +66,7 @@ module SecretsManager
       object = JSON.parse(response.secret_string, symbolize_names: true)
 
       value = parse_value(object)
-      set_in_memory(resolved_path, value, parse_ttl(object))
+      cache.set(resolved_path, value, parse_ttl(object))
       return value
     rescue Aws::SecretsManager::Errors::ResourceNotFoundException => e
       raise SecretsManager::SecretNotFound, "Could not find secret with path #{resolved_path}"

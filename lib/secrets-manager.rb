@@ -8,8 +8,8 @@ require "json"
 module SecretsManager
   class SecretNotFound < StandardError; end;
 
-  def self.new
-    Manager.new
+  def self.new(**args)
+    Manager.new(**args)
   end
 
   class Cache

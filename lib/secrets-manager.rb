@@ -33,10 +33,9 @@ module SecretsManager
   class Manager
     attr_reader :cache
 
-    def initialize(client = nil)
+    def initialize(client: nil)
       @cache = Cache.new
       @aws_client = client
-    end
 
     def secret_env
       ENV.fetch('AWS_SECRETS_ENV', 'dev'),

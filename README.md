@@ -34,6 +34,23 @@ This gem expects your secret value to be a JSON object. The only required key is
 * `ttl` - Time to live in seconds. Describes how long the secret should live in in-memory cache.
 * `encoding` - Currently, only `base64` is supported as a value. If your `value` is base64 encoded, this will result in a returned secret that is base64 decoded.
 
+### Configuration
+The follow ENV vars are expected:
+`AWS_SECRETS_ENV` - preceeds all path lookups, ex: `dev`, `staging`, `qa`, `production`
+`AWS_SECRETS_KEY` - AWS IAM access key
+`AWS_SECRETS_SECRET` - AWS IAM access secret
+
+The manager should be created at boot time, in an initializer for example, and stored as a constant or global.
+```
+$secrets = SecretsManager.new
+```
+
+### Lookup
+```
+$secrets.fetch('services/twilio/api-key')
+$secrets['services/twilio/api-key']
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

@@ -29,6 +29,10 @@ The path format is as follows: `{{secret_env}}/{{secret_path}}`. When using this
 
 For example, to access the secret `twlio-key`, `$secrets.fetch('twilio-key')`. This would be stored in AWS SM as `dev/twilio-key`.
 
+If you would like to define a secret that is available in all envs, you can prefix your lookup with `global` and the `secret_env` will not be prependded to the request.
+
+For example: to access the secret `global/config/foo`, `$secrets.fetch('global/config/foo')`. This would be stored in AWS SM as `global/config/foo`.
+
 ### Payload
 This gem expects your secret value to be a JSON object. The only required key is `value`. The following keys are optional:
 * `ttl` - Time to live in seconds. Describes how long the secret should live in in-memory cache.

@@ -56,7 +56,11 @@ module SecretsManager
     end
 
     def fetch(secret_path)
-      resolved_path = secret_env + '/' + secret_path
+      if secret_path.start_with?("global")
+        resolved_path = secret_path
+      else
+        resolved_path = secret_env + '/' + secret_path
+      end
 
       cached_value = cache.find(resolved_path)
       return cached_value if cached_value
@@ -90,6 +94,13 @@ module SecretsManager
         case data[:encoding]
         when "base64"
           value = Base64.strict_decode64(value)
+        end
+      end
+
+      if data[:type].present?
+        case data[:type]
+        when "json"
+          value = JSON.parse(value, symbolize_names: true)
         end
       end
 

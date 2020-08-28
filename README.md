@@ -33,6 +33,7 @@ For example, to access the secret `twlio-key`, `$secrets.fetch('twilio-key')`. T
 This gem expects your secret value to be a JSON object. The only required key is `value`. The following keys are optional:
 * `ttl` - Time to live in seconds. Describes how long the secret should live in in-memory cache.
 * `encoding` - Currently, only `base64` is supported as a value. If your `value` is base64 encoded, this will result in a returned secret that is base64 decoded.
+* `type` - Currently, only `json` is supported as a value. If your `value` is valid JSON, this will result in a returned secret that is symbolified ruby hash.
 
 Example:
 ```
@@ -58,6 +59,11 @@ $secrets = SecretsManager.new
 ```
 $secrets.fetch('services/twilio/api-key')
 $secrets['services/twilio/api-key']
+```
+
+To use a secret that is available in all envs, prepend the secret name with `global`
+```
+$secrets['global/config/api-key']
 ```
 
 ## Development

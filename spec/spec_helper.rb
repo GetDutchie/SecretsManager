@@ -1,4 +1,7 @@
 require "bundler/setup"
+require "pry"
+require "timecop"
+
 require "secrets-manager"
 
 RSpec.configure do |config|
@@ -10,5 +13,13 @@ RSpec.configure do |config|
 
   config.expect_with :rspec do |c|
     c.syntax = :expect
+  end
+
+  config.before do
+    Timecop.freeze
+  end
+
+  config.after do
+    Timecop.return
   end
 end

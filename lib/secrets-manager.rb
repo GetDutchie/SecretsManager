@@ -22,7 +22,9 @@ module SecretsManager
     end
 
     def set(path, value, ttl = 86400)
+
       @_cache[path] = {expires_at: (Time.now + ttl), value: value}
+
       return self
     end
 
@@ -67,10 +69,11 @@ module SecretsManager
 
       response = client.get_secret_value(secret_id: resolved_path)
       return nil unless response && response.secret_string
-      object = JSON.parse(response.secret_string, symbolize_names: true)
 
+      object = JSON.parse(response.secret_string, symbolize_names: true)
       value = parse_value(object)
       cache.set(resolved_path, value, parse_ttl(object))
+
       return value
     rescue Aws::SecretsManager::Errors::ResourceNotFoundException => e
       raise SecretsManager::SecretNotFound, "Could not find secret with path #{resolved_path}"
@@ -81,6 +84,7 @@ module SecretsManager
     end
 
     private
+
     def parse_ttl(data)
       ## Default to one day cache TTL
       return 86400 unless data[:ttl].present?
@@ -106,6 +110,5 @@ module SecretsManager
 
       return value
     end
-
   end
 end

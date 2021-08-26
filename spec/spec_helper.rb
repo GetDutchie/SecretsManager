@@ -1,6 +1,7 @@
 require "bundler/setup"
 require "pry"
 require "timecop"
+require "faker"
 
 require "secrets-manager"
 
@@ -10,6 +11,10 @@ RSpec.configure do |config|
 
   # Disable RSpec exposing methods globally on `Module` and `main`
   config.disable_monkey_patching!
+
+  # Focus tests
+  config.filter_run focus: true
+  config.run_all_when_everything_filtered = true
 
   config.expect_with :rspec do |c|
     c.syntax = :expect

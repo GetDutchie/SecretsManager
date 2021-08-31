@@ -4,7 +4,7 @@ require "version"
 require "aws-sdk-secretsmanager"
 require "concurrent-ruby"
 require "json"
-require 'active_support/core_ext/object/blank.rb'
+require "active_support/core_ext/object/blank.rb"
 require "base64"
 
 module SecretsManager
@@ -47,15 +47,15 @@ module SecretsManager
     end
 
     def secret_env
-      ENV['AWS_SECRETS_ENV'] || ENV['RACK_ENV'] || 'development'
+      ENV["AWS_SECRETS_ENV"] || ENV["RACK_ENV"] || "development"
     end
 
     def client
       return @aws_client if @aws_client
 
       @_client ||= Aws::SecretsManager::Client.new({
-        region: ENV.fetch('AWS_SECRETS_REGION', 'us-east-1'),
-        credentials: Aws::Credentials.new(ENV['AWS_SECRETS_KEY'], ENV['AWS_SECRETS_SECRET'])
+        region: ENV.fetch("AWS_SECRETS_REGION", "us-east-1"),
+        credentials: Aws::Credentials.new(ENV["AWS_SECRETS_KEY"], ENV["AWS_SECRETS_SECRET"])
       })
     end
 
@@ -63,7 +63,7 @@ module SecretsManager
       if secret_path.start_with?("global")
         resolved_path = secret_path
       else
-        resolved_path = secret_env + '/' + secret_path
+        resolved_path = secret_env + "/" + secret_path
       end
 
       cached_value = cache.find(resolved_path)

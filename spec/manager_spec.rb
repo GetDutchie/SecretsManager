@@ -2,7 +2,7 @@
 
 RSpec.describe SecretsManager do
   it "returns the correct version" do
-    expect(described_class::VERSION).to eq("1.2.0")
+    expect(described_class::VERSION).to eq("1.1.0")
   end
 
   describe "#new" do

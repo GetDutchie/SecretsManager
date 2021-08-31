@@ -2,7 +2,7 @@ require "bundler/setup"
 require "pry"
 require "timecop"
 require "faker"
-
+require "base64"
 require "secrets-manager"
 
 RSpec.configure do |config|

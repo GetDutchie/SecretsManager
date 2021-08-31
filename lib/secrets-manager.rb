@@ -4,6 +4,8 @@ require "version"
 require "aws-sdk-secretsmanager"
 require "concurrent-ruby"
 require "json"
+require 'active_support/core_ext/object/blank.rb'
+require "base64"
 
 module SecretsManager
   class SecretNotFound < StandardError; end;
@@ -22,7 +24,6 @@ module SecretsManager
     end
 
     def set(path, value, ttl = 86400)
-
       @_cache[path] = {expires_at: (Time.now + ttl), value: value}
 
       return self
@@ -32,6 +33,7 @@ module SecretsManager
       fetched = @_cache[path]
       return unless fetched
       return unless !fetched[:expires_at].nil? && (fetched[:expires_at]) > Time.now
+
       fetched[:value]
     end
   end
@@ -72,6 +74,7 @@ module SecretsManager
 
       object = JSON.parse(response.secret_string, symbolize_names: true)
       value = parse_value(object)
+
       cache.set(resolved_path, value, parse_ttl(object))
 
       return value

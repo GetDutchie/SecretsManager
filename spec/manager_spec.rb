@@ -57,7 +57,42 @@ RSpec.describe SecretsManager do
     end
 
     describe "#find" do
-      pending
+      let(:path) { "#{Faker::Lorem.word}/#{Faker::Lorem.word}" }
+      let(:value) { Faker::Lorem.word }
+      let(:concurrent_map_double) { double(Concurrent::Map) }
+
+      subject(:find) { described_class::Cache.new.find(path) }
+
+      context "when cache not expired" do
+        let(:expires_at) { Time.now + 5 }
+
+        before do
+          allow(concurrent_map_double).to receive(:[]).with(path).and_return(expires_at: expires_at, value: value)
+          allow(Concurrent::Map).to receive(:new).with(no_args).and_return(concurrent_map_double)
+        end
+
+        it { expect(find).to eq(value) }
+      end
+
+      context "when cache expired" do
+        let(:expires_at) { Time.now - 5 }
+
+        before do
+          allow(concurrent_map_double).to receive(:[]).with(path).and_return(expires_at: expires_at, value: value)
+          allow(Concurrent::Map).to receive(:new).with(no_args).and_return(concurrent_map_double)
+        end
+
+        it { expect(find).to eq(nil) }
+      end
+
+      context "when cache missing" do
+        before do
+          allow(concurrent_map_double).to receive(:[]).with(path).and_return(nil)
+          allow(Concurrent::Map).to receive(:new).with(no_args).and_return(concurrent_map_double)
+        end
+
+        it { expect(find).to eq(nil) }
+      end
     end
   end
 
@@ -263,11 +298,106 @@ RSpec.describe SecretsManager do
     end
 
     describe "#[]" do
-      pending
+      let(:path) { "#{Faker::Lorem.word}/#{Faker::Lorem.word}" }
+
+      before do
+        allow_any_instance_of(described_class::Manager).to receive(:fetch).with(path).and_return(true)
+      end
+
+      subject(:fetch) { described_class::Manager.new[path] }
+
+      it "calls the fetch method" do
+        expect_any_instance_of(described_class::Manager).to receive(:fetch).with(path).and_return(true)
+
+        fetch
+      end
     end
 
     describe "#fetch" do
-      pending
+      let(:secret_env) { "#{Faker::Lorem.word}" }
+      let(:concurrent_map_double) { double(Concurrent::Map) }
+      let(:value) { Faker::Lorem.word }
+
+      subject(:fetch) { described_class::Manager.new.fetch(path) }
+
+      shared_examples("a result with processed paths") do
+        context "when global" do
+          let(:path) { "global/#{Faker::Lorem.word}" }
+          let(:resolved_path) { "#{path}" }
+
+          it "returns the correct global value" do
+            expect(fetch).to eq(value)
+          end
+        end
+
+        context "when not global" do
+          let(:path) { "#{Faker::Lorem.word}/#{Faker::Lorem.word}" }
+          let(:resolved_path) { "#{secret_env}/#{path}" }
+
+          before do
+            allow_any_instance_of(described_class::Manager).to receive(:secret_env).with(no_args).and_return(secret_env)
+          end
+
+          it "returns the correct non-global value" do
+            expect(fetch).to eq(value)
+          end
+        end
+      end
+
+      context "when cached value does exist" do
+        let(:expires_at) { Time.now + 5 }
+
+        before do
+          allow(concurrent_map_double).to receive(:[]).with(resolved_path).and_return(expires_at: expires_at, value: value)
+          allow(Concurrent::Map).to receive(:new).with(no_args).and_return(concurrent_map_double)
+        end
+
+        it_behaves_like("a result with processed paths")
+      end
+
+      context "when cached value does not exist" do
+        let(:expires_at) { Time.now + 2 }
+        let(:secret_string) { { value: strict_encode64_value, encoding: "base64", ttl: expires_at }.to_json }
+        let(:aws_client_double_response) { OpenStruct.new(secret_string: secret_string) }
+        let(:aws_client_double) { double(Aws::SecretsManager::Client, response: aws_client_double_response) }
+
+        before do
+          allow_any_instance_of(described_class::Manager).to receive(:client).with(no_args).and_return(aws_client_double)
+        end
+
+        context "when response is nil" do
+          let(:value) { nil }
+          let(:strict_encode64_value) { nil }
+
+          before do
+            allow(concurrent_map_double).to receive(:[]).with(resolved_path).and_return(nil)
+            allow(Concurrent::Map).to receive(:new).with(no_args).and_return(concurrent_map_double)
+            allow(aws_client_double).to receive(:get_secret_value).with(secret_id: resolved_path).and_return(nil)
+          end
+
+          it_behaves_like("a result with processed paths")
+        end
+
+        context "when response is not nil" do
+          let(:strict_encode64_value) { Base64.strict_encode64(value) }
+
+          before do
+            allow(concurrent_map_double).to receive(:[]).with(resolved_path).and_return(nil).once
+            allow(Concurrent::Map).to receive(:new).with(no_args).and_return(concurrent_map_double)
+            allow(aws_client_double).to receive(:get_secret_value).with(secret_id: resolved_path).and_return(aws_client_double_response)
+            allow_any_instance_of(described_class::Cache).to receive(:set).with(resolved_path, value, expires_at.to_s.to_i).and_return(true)
+          end
+
+          it_behaves_like("a result with processed paths")
+
+          context "sets the cache" do
+            let(:path) { "global/#{Faker::Lorem.word}" }
+            let(:resolved_path) { "#{path}" }
+
+            it { expect_any_instance_of(described_class::Cache).to receive(:set).with(resolved_path, value, expires_at.to_s.to_i); fetch  }
+          end
+        end
+      end
     end
   end
 end

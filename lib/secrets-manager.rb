@@ -4,6 +4,8 @@ require "version"
 require "aws-sdk-secretsmanager"
 require "concurrent-ruby"
 require "json"
+require "active_support/core_ext/object/blank.rb"
+require "base64"
 
 module SecretsManager
   class SecretNotFound < StandardError; end;
@@ -23,6 +25,7 @@ module SecretsManager
 
     def set(path, value, ttl = 86400)
       @_cache[path] = {expires_at: (Time.now + ttl), value: value}
+
       return self
     end
 
@@ -30,6 +33,7 @@ module SecretsManager
       fetched = @_cache[path]
       return unless fetched
       return unless !fetched[:expires_at].nil? && (fetched[:expires_at]) > Time.now
+
       fetched[:value]
     end
   end
@@ -43,15 +47,15 @@ module SecretsManager
     end
 
     def secret_env
-      ENV['AWS_SECRETS_ENV'] || ENV['RACK_ENV'] || 'development'
+      ENV["AWS_SECRETS_ENV"] || ENV["RACK_ENV"] || "development"
     end
 
     def client
       return @aws_client if @aws_client
 
       @_client ||= Aws::SecretsManager::Client.new({
-        region: ENV.fetch('AWS_SECRETS_REGION', 'us-east-1'),
-        credentials: Aws::Credentials.new(ENV['AWS_SECRETS_KEY'], ENV['AWS_SECRETS_SECRET'])
+        region: ENV.fetch("AWS_SECRETS_REGION", "us-east-1"),
+        credentials: Aws::Credentials.new(ENV["AWS_SECRETS_KEY"], ENV["AWS_SECRETS_SECRET"])
       })
     end
 
@@ -59,7 +63,7 @@ module SecretsManager
       if secret_path.start_with?("global")
         resolved_path = secret_path
       else
-        resolved_path = secret_env + '/' + secret_path
+        resolved_path = secret_env + "/" + secret_path
       end
 
       cached_value = cache.find(resolved_path)
@@ -67,10 +71,12 @@ module SecretsManager
 
       response = client.get_secret_value(secret_id: resolved_path)
       return nil unless response && response.secret_string
-      object = JSON.parse(response.secret_string, symbolize_names: true)
 
+      object = JSON.parse(response.secret_string, symbolize_names: true)
       value = parse_value(object)
+
       cache.set(resolved_path, value, parse_ttl(object))
+
       return value
     rescue Aws::SecretsManager::Errors::ResourceNotFoundException => e
       raise SecretsManager::SecretNotFound, "Could not find secret with path #{resolved_path}"
@@ -81,6 +87,7 @@ module SecretsManager
     end
 
     private
+
     def parse_ttl(data)
       ## Default to one day cache TTL
       return 86400 unless data[:ttl].present?
@@ -106,6 +113,5 @@ module SecretsManager
 
       return value
     end
-
   end
 end

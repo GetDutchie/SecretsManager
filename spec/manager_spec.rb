@@ -390,11 +390,15 @@ RSpec.describe SecretsManager do
 
           it_behaves_like("a result with processed paths")
 
-          context "sets the cache" do
+          context "when validating the cache" do
             let(:path) { "global/#{Faker::Lorem.word}" }
             let(:resolved_path) { "#{path}" }
 
-            it { expect_any_instance_of(described_class::Cache).to receive(:set).with(resolved_path, value, expires_at.to_s.to_i); fetch  }
+            it "runs the cache setting process" do
+              expect_any_instance_of(described_class::Cache).to receive(:set).with(resolved_path, value, expires_at.to_s.to_i)
+
+              fetch
+            end
           end
         end
       end

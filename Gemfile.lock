@@ -33,7 +33,7 @@ GEM
       i18n (>= 1.6, < 2)
     i18n (1.8.10)
       concurrent-ruby (~> 1.0)
-    jmespath (1.4.0)
+    jmespath (1.6.1)
     method_source (1.0.0)
     minitest (5.14.4)
     pry (0.13.1)
